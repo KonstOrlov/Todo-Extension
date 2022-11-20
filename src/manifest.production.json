@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "Pomodoro",
+    "name": "Todo List",
     "description": "chrome extension",
     "version": "0.0.1",
     "background": {
