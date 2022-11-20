@@ -248,10 +248,6 @@ export default {
   margin-bottom: 14px;
 }
 
-.active {
-  background-color: lightgreen;
-}
-
 .filters-container{
   display: flex;
   gap: 10px;
@@ -272,5 +268,9 @@ export default {
 
 .filters-container__button:focus {
   outline: none;
+}
+
+.active {
+  background-color: lightgreen;
 }
 </style >
