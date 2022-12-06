@@ -1,17 +1,17 @@
-<template>
-  <div class="container">
-    <img alt="Vue logo" src="@/assets/logo.png" class="logo">
+<template >
+  <div class="container" >
+    <img alt="Vue logo" src="@/assets/logo.png" class="logo" >
     <input type="text"
            class="todo-input"
            placeholder="What needs to be done?"
            v-model="newTodo"
            @keyup.enter="addTodo"
     >
-    <div v-show="!todos.length" class="todos-empty">Todo List empty &#9997;</div>
+    <div v-show="!todos.length" class="todos-empty" >Todo List empty &#9997;</div >
     <div class="todo-item_wrapper" >
-      <div v-for="(todo, index) in todosFiltered" :key="todo.id" class="todo-item" >
+      <div v-for="(todo) in todosFiltered" :key="todo.id" class="todo-item" >
         <div class="todo-item-left" >
-          <input type="checkbox" v-model="todo.completed" >
+          <input type="checkbox" v-model="todo.completed" @change="changeTodoInLocalStorage(todo.id, todo)" >
           <div v-if="!todo.editing"
                @dblclick="editTodo(todo)"
                class="todo-item-label"
@@ -28,37 +28,44 @@
                  @keyup.enter="doneEdit(todo)"
                  @keyup.esc="cancelEdit(todo)" >
         </div >
-        <div class="remove-item" @click="removeTodo(index)" >
+        <div class="remove-item"  @click="removeTodo(todo.id)" >
           &times;
         </div >
       </div >
     </div >
 
-    <div class="extra-container">
-      <div>
-        <label>
+    <div class="extra-container" >
+      <div >
+        <label >
           <input type="checkbox"
                  :checked="!anyRemaining"
                  @change="checkAllTodos"
           >
           Check All
-        </label>
-      </div>
-      <div>{{ remaining }} items left</div>
-    </div>
+        </label >
+      </div >
+      <div >{{ remaining }} items left</div >
+    </div >
 
-    <div class="extra-container">
-      <div class="filters-container">
-        <button class="filters-container__button" :class="{ active: filter === 'all' }" @click="filter = 'all'">All</button>
-        <button class="filters-container__button" :class="{ active: filter === 'active' }" @click="filter = 'active'">Active</button>
-        <button class="filters-container__button" :class="{ active: filter === 'completed' }" @click="filter = 'completed'">Completed</button>
-      </div>
+    <div class="extra-container" >
+      <div class="filters-container" >
+        <button class="filters-container__button" :class="{ active: filter === 'all' }" @click="filter = 'all'" >All
+        </button >
+        <button class="filters-container__button" :class="{ active: filter === 'active' }" @click="filter = 'active'" >
+          Active
+        </button >
+        <button class="filters-container__button" :class="{ active: filter === 'completed' }"
+                @click="filter = 'completed'" >Completed
+        </button >
+      </div >
 
-      <button v-if="showClearCompletedButton" @click="clearCompleted" class="filters-container__button">Clear Completed</button>
+      <button v-if="showClearCompletedButton" @click="clearCompleted" class="filters-container__button" >Clear
+                                                                                                         Completed
+      </button >
 
-    </div>
-  </div>
-</template>
+    </div >
+  </div >
+</template >
 
 <script >
 export default {
@@ -69,7 +76,7 @@ export default {
       idForTodo: 0,
       beforeEditCache: '',
       filter: 'all',
-      todos: []
+      todos: JSON.parse(localStorage.getItem('todo-extension')) || []
     }
   },
   computed: {
@@ -105,19 +112,21 @@ export default {
       if (this.newTodo.trim().length === 0) {
         return;
       }
-
-      this.todos.push({
+      const newTodo = {
         id: this.idForTodo,
         title: this.newTodo,
         completed: false,
         editing: false
-      })
+      }
+      this.todos.push(newTodo)
+      this.addTodoInLocalStorage("todo-extension", newTodo)
 
       this.newTodo = '';
       this.idForTodo++
     },
-    removeTodo(index) {
-      this.todos.splice(index, 1)
+    removeTodo(id) {
+      this.todos = this.todos.filter(todo => todo.id !== id);
+      this.deleteTodoFromLocalStorage("todo-extension", id)
     },
     editTodo(todo) {
       this.beforeEditCache = todo.title
@@ -129,6 +138,7 @@ export default {
       }
       todo.editing = false;
 
+      this.changeTodoInLocalStorage(todo.id, todo)
     },
     cancelEdit(todo) {
       todo.title = this.beforeEditCache;
@@ -138,7 +148,32 @@ export default {
       this.todos.forEach(todo => todo.completed = event.target.checked)
     },
     clearCompleted() {
-      this.todos = this.todos.filter(todo => !todo.completed)
+      this.todos = this.todos.filter(todo => !todo.completed);
+      localStorage.setItem('todo-extension', JSON.stringify(this.todos));
+    },
+    addTodoInLocalStorage(key, value) {
+      const new_data = value;
+      if (localStorage.getItem(key) === null) {
+        localStorage.setItem(key, "[]");
+      }
+      const data = JSON.parse(localStorage.getItem(key));
+      data.push(new_data);
+      localStorage.setItem(key, JSON.stringify(data));
+    },
+    deleteTodoFromLocalStorage(key, id) {
+      if (localStorage.getItem(key) !== null) {
+        const data = JSON.parse(localStorage.getItem(key));
+        const new_data = data.filter(todo => todo.id !== id);
+        localStorage.setItem(key, JSON.stringify(new_data));
+      }
+    },
+    changeTodoInLocalStorage(id, value) {
+      const data = JSON.parse(localStorage.getItem('todo-extension'));
+      const newData = []
+      data.forEach(todo => {
+        todo.id === id ? newData.push(value) : newData.push(todo);
+      })
+      localStorage.setItem('todo-extension', JSON.stringify(newData));
     }
   }
 }
@@ -179,7 +214,7 @@ export default {
   border: 1px solid #ccc;
 }
 
-.todo-item_wrapper{
+.todo-item_wrapper {
   max-height: 200px;
   overflow-y: scroll;
 }
@@ -230,7 +265,7 @@ export default {
   color: gray;
 }
 
-.extra-container{
+.extra-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -240,7 +275,7 @@ export default {
   margin-bottom: 14px;
 }
 
-.filters-container{
+.filters-container {
   display: flex;
   gap: 10px;
 }
