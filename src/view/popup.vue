@@ -7,7 +7,9 @@
            v-model="newTodo"
            @keyup.enter="addTodo"
     >
-    <div v-show="!todos.length" class="todos-empty" >Todo List empty &#9997;</div >
+    <div v-show="!isActiveListEmpty && !isCompletedListEmpty && !todos.length" class="todos-empty" >Todo List empty &#9997;</div >
+    <div v-show="isActiveListEmpty" class="todos-empty" >No active to do &#128528;</div >
+    <div v-show="isCompletedListEmpty" class="todos-empty" >No completed to do &#127937;</div >
     <div class="todo-item_wrapper" >
       <div v-for="(todo) in todosFiltered" :key="todo.id" class="todo-item" >
         <div class="todo-item-left" >
@@ -98,6 +100,22 @@ export default {
     },
     showClearCompletedButton() {
       return this.todos.filter(todo => todo.completed).length > 0
+    },
+    isActiveListEmpty() {
+      if(this.filter === 'active'){
+        if(!this.todosFiltered.length) {
+          return true
+        }
+      }
+      return false
+    },
+    isCompletedListEmpty() {
+      if(this.filter === 'completed'){
+        if(!this.todosFiltered.length) {
+          return true
+        }
+      }
+      return false
     }
   },
   directives: {
@@ -186,7 +204,7 @@ export default {
 
 .container {
   font-size: 16px;
-  min-width: 400px;
+  width: 400px;
   margin: 0 auto 20px;
   max-height: 450px;
 }
@@ -239,10 +257,10 @@ export default {
 }
 
 .todo-item-edit {
-  font-size: 24px;
+  font-size: 16px;
   color: #2c3e50;
   margin-left: 12px;
-  width: 100%;
+  width: 330px;
   padding: 10px;
   border: 1px solid #ccc;
 }
